@@ -97,6 +97,45 @@ class _MyHomePageState extends State<MyHomePage> {
     ],
   );
 
+  List<Widget> _renderLandscapeContent(
+      MediaQueryData mediaQuery, AppBar appBar, Widget renderTransactionList) {
+    return [
+      Row(mainAxisAlignment: MainAxisAlignment.center, children: [
+        const Text("Show chart ?"),
+        Switch.adaptive(
+            value: isShowChart,
+            onChanged: (val) {
+              setState(() {
+                isShowChart = val;
+              });
+            }),
+      ]),
+      isShowChart
+          ? Container(
+              height: (mediaQuery.size.height -
+                      appBar.preferredSize.height -
+                      mediaQuery.padding.top) *
+                  0.7,
+              child: MyChart(_recentTransactions),
+            )
+          : renderTransactionList,
+    ];
+  }
+
+  List<Widget> _renderPortraitContent(
+      MediaQueryData mediaQuery, AppBar appBar, Widget renderTransactionList) {
+    return [
+      Container(
+        height: (mediaQuery.size.height -
+                appBar.preferredSize.height -
+                mediaQuery.padding.top) *
+            0.3,
+        child: MyChart(_recentTransactions),
+      ),
+      renderTransactionList,
+    ];
+  }
+
   @override
   Widget build(BuildContext context) {
     final mediaQuery = MediaQuery.of(context);
@@ -113,41 +152,20 @@ class _MyHomePageState extends State<MyHomePage> {
     return Scaffold(
       appBar: appBar,
       body: SingleChildScrollView(
-        child: Column(
-          children: <Widget>[
-            if (isLandscape)
-              Row(mainAxisAlignment: MainAxisAlignment.center, children: [
-                Text("Show chart ?"),
-                Switch.adaptive(
-                    value: isShowChart,
-                    onChanged: (val) {
-                      setState(() {
-                        isShowChart = val;
-                      });
-                    }),
-              ]),
-            if (!isLandscape)
-              Container(
-                height: (mediaQuery.size.height -
-                        appBar.preferredSize.height -
-                        mediaQuery.padding.top) *
-                    0.3,
-                child: MyChart(_recentTransactions),
-              ),
-            if (!isLandscape) renderTransactionList,
-            if (isLandscape)
-              isShowChart
-                  ? Container(
-                      height: (mediaQuery.size.height -
-                              appBar.preferredSize.height -
-                              mediaQuery.padding.top) *
-                          0.7,
-                      child: MyChart(_recentTransactions),
-                    )
-                  : renderTransactionList,
-          ],
-        ),
-      ),
+          child: Column(children: <Widget>[
+        if (isLandscape)
+          ..._renderLandscapeContent(
+            mediaQuery,
+            appBar,
+            renderTransactionList,
+          ),
+        if (!isLandscape)
+          ..._renderPortraitContent(
+            mediaQuery,
+            appBar,
+            renderTransactionList,
+          ),
+      ])),
       floatingActionButton: FloatingActionButton(
         onPressed: () => showAddTransaction(context),
         child: const Icon(Icons.add),
